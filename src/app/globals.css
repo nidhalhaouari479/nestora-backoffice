@@ -308,3 +308,50 @@ button:disabled { cursor: not-allowed; opacity: .6; }
   .form-footer { flex-direction: column; align-items: stretch; }
 }
 .form-field .filter-search input { height: auto !important; padding: 0 !important; border: 0 !important; background: none !important; box-shadow: none !important; }
+
+/* ── Caractéristiques des maisons ─────────────────────── */
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 20px; }
+.tab { padding: 9px 14px; border: 1px solid var(--line); border-radius: 999px; background: #fffdf9; color: #4c5c64; font-size: 12px; font-weight: 700; }
+.tab:hover { border-color: var(--teal); }
+.tab[aria-current='page'] { border-color: var(--teal); background: var(--teal-soft); color: #0b6c5d; }
+.feature-icon { display: inline-grid; place-items: center; flex-shrink: 0; width: 32px; height: 32px; border-radius: 9px; background: var(--teal-soft); color: #0b6c5d; }
+.action-group { display: inline-flex; align-items: center; gap: 16px; }
+.inline-form { display: inline; margin: 0; }
+.danger-link { border: 0; background: none; padding: 0; color: #b0392f; font-size: inherit; cursor: pointer; }
+.icon-picker { display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 6px; padding: 10px; border: 1px solid var(--line); border-radius: 12px; background: #fffdf9; }
+.icon-option { position: relative; display: grid; place-items: center; height: 44px; border: 1px solid transparent; border-radius: 10px; color: #4c5c64; cursor: pointer; }
+.icon-option:hover { background: #fbf4ea; }
+.icon-option input { position: absolute; opacity: 0; pointer-events: none; }
+.icon-option:has(input:checked) { border-color: var(--teal); background: var(--teal-soft); color: #0b6c5d; }
+.icon-option:has(input:focus-visible) { box-shadow: 0 0 0 3px #0699821f; }
+.form-section-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 26px 0 12px; padding-top: 18px; border-top: 1px solid #efe4d6; }
+.form-section-heading .form-section-title { margin: 0; padding: 0; border: 0; }
+.feature-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 8px; }
+.feature-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-height: 52px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 12px; background: #fffdf9; }
+.feature-row.is-on { border-color: var(--teal); background: #f3faf7; }
+.feature-row.has-error { border-color: #c0473f; }
+.feature-row .field-error { flex-basis: 100%; }
+.feature-toggle { display: flex; flex: 1; align-items: center; gap: 10px; min-width: 0; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.feature-toggle input { width: 15px; height: 15px; margin: 0; accent-color: var(--teal); }
+.feature-toggle small { font-weight: 500; color: #8b979e; }
+.feature-value { display: inline-flex; align-items: center; gap: 6px; }
+.feature-value input { width: 120px; height: 34px; padding: 0 10px; border: 1px solid var(--line); border-radius: 9px; background: #fff; color: var(--ink); font-size: 12.5px; outline: none; }
+.feature-value input[type='number'] { width: 70px; }
+.feature-value input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px #0699821f; }
+.feature-suffix { color: #6a7a83; font-size: 11.5px; }
+
+/* ── Fiche étudiant ───────────────────────────────────── */
+.table-panel-header { margin: 0; padding: 18px 18px 14px; border-bottom: 1px solid var(--line); }
+.table-panel-header .muted { color: #6a7a83; font-weight: 600; }
+.info-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); margin: 0; }
+.info-list > div { padding: 12px 18px; border-bottom: 1px solid #efe4d6; }
+.info-list dt { color: #6a7a83; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.info-list dd { margin: 4px 0 0; font-size: 12.5px; overflow-wrap: anywhere; }
+.info-list .mono { font-family: Consolas, monospace; font-size: 11px; color: #4c5c64; }
+
+/* ── Visites : choix de la date finale ────────────────── */
+.proposal-picker { margin: 0; }
+.proposal-picker fieldset { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; border: 0; min-width: 0; }
+.proposal-picker .check-chip { padding: 6px 10px; font-size: 11.5px; }
+.action-stack { display: inline-flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.button-small { height: 32px; padding: 0 14px; font-size: 11.5px; box-shadow: none; }

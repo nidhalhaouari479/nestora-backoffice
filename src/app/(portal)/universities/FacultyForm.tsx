@@ -28,9 +28,6 @@ export function FacultyForm({ faculty }: { faculty?: Faculty }) {
         <Field label="Ville" name="city">
           <input id="city" name="city" defaultValue={v.text("city", faculty?.city ?? "Tunis")} />
         </Field>
-        <Field label="Quartiers proches" name="areas" hint="Séparés par des virgules" wide>
-          <input id="areas" name="areas" defaultValue={v.text("areas", faculty?.areas.join(", "))} placeholder="El Manar, Rommana, Cité Olympique" />
-        </Field>
       </div>
 
       <h3 className="form-section-title">Photo</h3>
@@ -43,9 +40,6 @@ export function FacultyForm({ faculty }: { faculty?: Faculty }) {
         )}
         <Field label={faculty?.image_url ? "Remplacer la photo" : "Photo"} name="image" error={errors.image} hint="JPG, PNG ou WebP, 3 Mo maximum">
           <input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp" />
-        </Field>
-        <Field label="Cadrage" name="image_position" hint="ex. center, 50% 70%">
-          <input id="image_position" name="image_position" defaultValue={v.text("image_position", faculty?.image_position ?? "center")} />
         </Field>
         <Field label="Ordre d’affichage" name="sort_order">
           <input id="sort_order" name="sort_order" type="number" min={0} defaultValue={v.text("sort_order", faculty?.sort_order ?? 0)} />

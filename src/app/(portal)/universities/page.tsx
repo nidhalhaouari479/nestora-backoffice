@@ -43,7 +43,7 @@ export default async function FacultiesPage({ searchParams }: PageProps<"/univer
           <div className="table-scroll">
             <table className="data-table">
               <thead>
-                <tr><th>Faculté</th><th>Ville</th><th>Quartiers</th><th>Maisons</th><th>Statut</th><th><span className="sr-only">Actions</span></th></tr>
+                <tr><th>Faculté</th><th>Ville</th><th>Maisons</th><th>Statut</th><th><span className="sr-only">Actions</span></th></tr>
               </thead>
               <tbody>
                 {faculties.map((faculty) => (
@@ -55,7 +55,6 @@ export default async function FacultiesPage({ searchParams }: PageProps<"/univer
                       </span>
                     </td>
                     <td>{faculty.city}</td>
-                    <td className="muted">{faculty.areas.join(" · ") || "—"}</td>
                     <td><Link href={`/properties?faculty=${faculty.id}`} className="table-link">{faculty.listing_universities[0]?.count ?? 0}</Link></td>
                     <td><span className={`pill ${faculty.is_active ? "pill-success" : "pill-neutral"}`}>{faculty.is_active ? "Visible" : "Masquée"}</span></td>
                     <td className="table-actions">{canManage && <Link href={`/universities/${faculty.id}`} className="table-link">Modifier</Link>}</td>

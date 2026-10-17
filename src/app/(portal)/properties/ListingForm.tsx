@@ -3,30 +3,24 @@
 import { useActionState, useMemo, useState } from "react";
 import Link from "next/link";
 import { Plus, Search, X } from "lucide-react";
-import { LISTING_STATUSES, LISTING_TYPES, type Faculty, type Landlord, type ListingDetail } from "@/lib/catalog-shared";
+import { FEATURE_KINDS, LISTING_GENDERS, LISTING_STATUSES, LISTING_TYPES, type Faculty, type Feature, type Landlord, type ListingDetail } from "@/lib/catalog-shared";
 import { Checkbox, Field, FormError, SubmitButton, useValues } from "@/components/admin/FormKit";
 import { saveListingAction } from "./actions";
+import { FeatureSection } from "./FeatureSection";
 
 type Props = {
   listing?: ListingDetail;
   landlords: Pick<Landlord, "id" | "full_name" | "reference" | "phone" | "is_active">[];
   faculties: Pick<Faculty, "id" | "name" | "short_name" | "is_active">[];
+  features: Feature[];
 };
-
-const AMENITIES = [
-  ["is_furnished", "Meublé"], ["has_wifi", "Wi-Fi"], ["has_ac", "Climatiseur"],
-  ["has_heating", "Chauffage"], ["in_residence", "Résidence"], ["has_desk", "Bureau"],
-] as const;
 
 const TRUST = [
   ["verified_onsite", "Visité sur place"], ["address_verified", "Adresse vérifiée"],
   ["photos_verified", "Photos vérifiées"], ["landlord_verified", "Bailleur vérifié"],
 ] as const;
 
-const COLLECTIONS = [["near_campus", "À deux pas du campus"], ["september", "Disponibles en septembre"], ["foyer", "Foyers privés vérifiés"]] as const;
-const NEARBY = [["university", "Université"], ["transport", "Transport"], ["cafe", "Café"], ["supermarket", "Supermarché"]] as const;
-
-export function ListingForm({ listing, landlords, faculties }: Props) {
+export function ListingForm({ listing, landlords, faculties, features }: Props) {
   const [state, action] = useActionState(saveListingAction, undefined);
   const errors = state?.fieldErrors ?? {};
   const v = useValues(state);
@@ -34,7 +28,14 @@ export function ListingForm({ listing, landlords, faculties }: Props) {
   const [photos, setPhotos] = useState(() => [...(listing?.listing_photos ?? [])].sort((a, b) => a.sort_order - b.sort_order).map((photo) => photo.url));
 
   const selectedFaculties = v.list("faculties", listing?.listing_universities.map((link) => link.university_id) ?? []);
-  const nearby = Object.fromEntries((listing?.listing_nearby ?? []).map((item) => [item.kind, item.minutes]));
+  const savedFeatures = new Map((listing?.listing_feature_values ?? []).map((item) => [item.feature_id, item.value]));
+  const selectedFeatures = v.list("features", [...savedFeatures.keys()]);
+  const featureValue = (id: string) => v.text(`feature_value_${id}`, savedFeatures.get(id));
+  const featureSection = (kind: (typeof FEATURE_KINDS)[number]) => (
+    <FeatureSection key={kind.value} kind={kind} features={features.filter((feature) => feature.kind === kind.value)}
+      selected={selectedFeatures} valueFor={featureValue} errors={errors} />
+  );
+  const [nearbyKind, equipmentKind, conditionKind, highlightKind] = FEATURE_KINDS;
   const visibleFaculties = useMemo(() => {
     const term = facultyQuery.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
     return faculties.filter((faculty) => !term || `${faculty.short_name ?? ""} ${faculty.name}`.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().includes(term));
@@ -95,6 +96,18 @@ export function ListingForm({ listing, landlords, faculties }: Props) {
             {LISTING_STATUSES.map((status) => <option key={status.value} value={status.value}>{status.label}</option>)}
           </select>
         </Field>
+        <fieldset className={`form-field wide ${errors.gender ? "has-error" : ""}`}>
+          <legend>Pour qui ? *</legend>
+          <div className="check-grid">
+            {LISTING_GENDERS.map((gender) => (
+              <label key={gender.value} className="check-chip">
+                <input type="radio" name="gender" value={gender.value} defaultChecked={v.text("gender", listing?.gender) === gender.value} required />
+                <span>{gender.label}</span>
+              </label>
+            ))}
+          </div>
+          {errors.gender && <p className="field-error" role="alert">{errors.gender}</p>}
+        </fieldset>
         <Field label="Titre court (cartes)" name="short_title">
           <input id="short_title" name="short_title" defaultValue={v.text("short_title", listing?.short_title)} placeholder="Studio lumineux · El Manar 2" />
         </Field>
@@ -127,6 +140,9 @@ export function ListingForm({ listing, landlords, faculties }: Props) {
         <Field label="Prix / mois (TND) *" name="price_tnd" error={errors.price_tnd}>
           <input id="price_tnd" name="price_tnd" type="number" min={1} defaultValue={v.text("price_tnd", listing?.price_tnd)} required />
         </Field>
+        <Field label="Prix soldé (TND)" name="sale_price_tnd" error={errors.sale_price_tnd} hint="Vide = pas de promotion">
+          <input id="sale_price_tnd" name="sale_price_tnd" type="number" min={1} defaultValue={v.text("sale_price_tnd", listing?.sale_price_tnd)} />
+        </Field>
         <Field label="Disponible dès *" name="available_from" error={errors.available_from}>
           <input id="available_from" name="available_from" type="date" defaultValue={v.text("available_from", listing?.available_from)} required />
         </Field>
@@ -150,10 +166,7 @@ export function ListingForm({ listing, landlords, faculties }: Props) {
         </div>
       </div>
 
-      <h3 className="form-section-title">Équipements</h3>
-      <div className="check-grid">
-        {AMENITIES.map(([name, label]) => <Checkbox key={name} name={name} label={label} defaultChecked={v.checked(name, listing?.[name])} />)}
-      </div>
+      {featureSection(equipmentKind)}
 
       <h3 className="form-section-title">Confiance</h3>
       <div className="form-grid four">
@@ -165,34 +178,9 @@ export function ListingForm({ listing, landlords, faculties }: Props) {
         </Field>
       </div>
 
-      <h3 className="form-section-title">À proximité (minutes)</h3>
-      <div className="form-grid four">
-        {NEARBY.map(([kind, label]) => (
-          <Field key={kind} label={label} name={`nearby_${kind}`}>
-            <input id={`nearby_${kind}`} name={`nearby_${kind}`} type="number" min={0} max={999} defaultValue={v.text(`nearby_${kind}`, nearby[kind])} />
-          </Field>
-        ))}
-      </div>
-
-      <h3 className="form-section-title">Conditions</h3>
-      <div className="form-grid">
-        <Field label="Dépôt de garantie" name="deposit_label">
-          <input id="deposit_label" name="deposit_label" defaultValue={v.text("deposit_label", listing?.deposit_label ?? "1 mois de loyer")} />
-        </Field>
-        <Field label="Charges" name="charges_label">
-          <input id="charges_label" name="charges_label" defaultValue={v.text("charges_label", listing?.charges_label ?? "Eau et électricité non incluses")} />
-        </Field>
-        <Field label="Visites" name="visits_label">
-          <input id="visits_label" name="visits_label" defaultValue={v.text("visits_label", listing?.visits_label ?? "Sur demande et confirmation")} />
-        </Field>
-      </div>
-
-      <h3 className="form-section-title">Mise en avant sur l’accueil</h3>
-      <div className="check-grid">
-        {COLLECTIONS.map(([value, label]) => (
-          <Checkbox key={value} name="collections" value={value} label={label} defaultChecked={v.list("collections", listing?.collections ?? []).includes(value)} />
-        ))}
-      </div>
+      {featureSection(nearbyKind)}
+      {featureSection(conditionKind)}
+      {featureSection(highlightKind)}
 
       <h3 className="form-section-title">Photos</h3>
       <div className={`form-field wide ${errors.photos ? "has-error" : ""}`}>

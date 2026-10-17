@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { requirePermission } from "@/lib/auth/session";
-import { listActiveLandlords, listFaculties } from "@/lib/catalog";
+import { listActiveLandlords, listFaculties, listFeatures } from "@/lib/catalog";
 import { ListingForm } from "../ListingForm";
 
 export const metadata: Metadata = { title: "Nouvelle maison" };
 
 export default async function NewListingPage() {
   await requirePermission("properties.manage", "properties");
-  const [landlords, faculties] = await Promise.all([listActiveLandlords(), listFaculties()]);
+  const [landlords, faculties, features] = await Promise.all([listActiveLandlords(), listFaculties(), listFeatures()]);
 
   return (
     <div className="page">
@@ -18,7 +18,7 @@ export default async function NewListingPage() {
           <p>Choisis le client propriétaire et au moins une faculté proche.</p>
         </div>
       </div>
-      <ListingForm landlords={landlords} faculties={faculties} />
+      <ListingForm landlords={landlords} faculties={faculties} features={features} />
     </div>
   );
 }

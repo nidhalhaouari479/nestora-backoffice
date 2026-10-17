@@ -16,6 +16,37 @@ export const LISTING_STATUSES = [
   { value: "archived", label: "Archivée", tone: "warning" },
 ] as const;
 
+export const LISTING_GENDERS = [
+  { value: "girls", label: "Filles" },
+  { value: "boys", label: "Garçons" },
+  { value: "all", label: "Tous" },
+] as const;
+
+// Lists managed on the "Caractéristiques" page; each house turns items on and fills a value.
+// value: "minutes" = number required, "required" = text required, "optional" = text optional, "none" = no value.
+export const FEATURE_KINDS = [
+  { value: "nearby", label: "À proximité", add: "Ajouter une proximité", input: "minutes", valueLabel: "Minutes" },
+  { value: "equipment", label: "Équipements", add: "Ajouter un équipement", input: "optional", valueLabel: "Précision (optionnelle)" },
+  { value: "condition", label: "Conditions", add: "Ajouter une condition", input: "required", valueLabel: "Valeur" },
+  { value: "highlight", label: "Mise en avant sur l’accueil", add: "Ajouter une mise en avant", input: "none", valueLabel: "" },
+] as const;
+
+export type FeatureKind = (typeof FEATURE_KINDS)[number]["value"];
+
+export function featureKind(value: string) {
+  return FEATURE_KINDS.find((kind) => kind.value === value);
+}
+
+export type Feature = {
+  id: string;
+  kind: FeatureKind;
+  code: string;
+  name: string;
+  icon: string;
+  sort_order: number;
+  is_active: boolean;
+};
+
 export type ListingStatus = (typeof LISTING_STATUSES)[number]["value"];
 export type ListingType = (typeof LISTING_TYPES)[number]["value"];
 
@@ -88,6 +119,8 @@ export type ListingDetail = {
   city: string;
   maps_url: string | null;
   price_tnd: number;
+  sale_price_tnd: number | null;
+  gender: string;
   service_included: boolean;
   walk_minutes: number;
   capacity: number;
@@ -101,17 +134,7 @@ export type ListingDetail = {
   photos_verified: boolean;
   landlord_verified: boolean;
   confidence_score: number | null;
-  is_furnished: boolean;
-  in_residence: boolean;
-  has_wifi: boolean;
-  has_ac: boolean;
-  has_heating: boolean;
-  has_desk: boolean;
-  deposit_label: string;
-  charges_label: string;
-  visits_label: string;
-  collections: string[];
   listing_universities: { university_id: string }[];
   listing_photos: { url: string; alt: string; position: string; sort_order: number }[];
-  listing_nearby: { kind: string; minutes: number }[];
+  listing_feature_values: { feature_id: string; value: string }[];
 };

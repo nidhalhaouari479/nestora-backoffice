@@ -1,8 +1,6 @@
 import { requireStaff } from "@/lib/auth/session";
 import { formatToday, getNavCounts } from "@/lib/ops";
-import { publicEnv } from "@/lib/env";
 import { Sidebar } from "@/components/portal/Sidebar";
-import { IdleWatcher } from "@/components/portal/IdleWatcher";
 import { Topbar } from "@/components/portal/Topbar";
 
 export default async function PortalLayout({ children }: LayoutProps<"/">) {
@@ -16,7 +14,6 @@ export default async function PortalLayout({ children }: LayoutProps<"/">) {
         <Topbar today={formatToday()} notifications={counts.urgent} />
         {children}
       </div>
-      <IdleWatcher idleMinutes={publicEnv.idleMinutes} />
     </div>
   );
 }

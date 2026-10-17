@@ -1,6 +1,6 @@
 import {
   AlertTriangle, BarChart3, Bell, Building, Calendar, CalendarDays, CalendarRange, Check, Clock3, CreditCard, FileText, House,
-  IdCard, KeyRound, LayoutGrid, LayoutTemplate, ListChecks, Megaphone, ScrollText, ShieldCheck, UserCheck, UserCog, Users, KeySquare,
+  IdCard, KeyRound, LayoutGrid, LayoutTemplate, ListChecks, Megaphone, ScrollText, ShieldCheck, SlidersHorizontal, UserCheck, UserCog, Users, KeySquare,
 } from "lucide-react";
 import type { NavIcon as NavIconName } from "@/lib/auth/permissions";
 
@@ -24,6 +24,7 @@ const ICONS = {
   chart: BarChart3,
   layout: LayoutTemplate,
   building: Building,
+  sliders: SlidersHorizontal,
   bell: Bell,
   megaphone: Megaphone,
   "users-cog": UserCog,

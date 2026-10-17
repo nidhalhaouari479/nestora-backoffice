@@ -12,7 +12,7 @@ export const ROLE_LABELS: Record<StaffRole, string> = {
 export type NavIcon =
   | "grid" | "user-check" | "list" | "check" | "calendar-range" | "alert" | "home" | "shield" | "calendar"
   | "users" | "calendar-days" | "clock" | "key" | "file" | "card" | "key-round" | "chart" | "layout"
-  | "building" | "bell" | "megaphone" | "users-cog" | "scroll" | "contact";
+  | "building" | "sliders" | "bell" | "megaphone" | "users-cog" | "scroll" | "contact";
 
 export type Section = {
   slug: string;
@@ -41,6 +41,7 @@ export const NAV_GROUPS: { label: string; sections: Section[] }[] = [
     sections: [
       { slug: "landlords", label: "Clients", permission: "landlords.view", icon: "contact", deniedAction: "de consulter les clients propriétaires" },
       { slug: "properties", label: "Maisons", permission: "properties.view", icon: "home", deniedAction: "de gérer les maisons" },
+      { slug: "features", label: "Caractéristiques", permission: "properties.view", icon: "sliders", deniedAction: "de gérer les caractéristiques des maisons" },
       { slug: "universities", label: "Facultés", permission: "universities.view", icon: "building", deniedAction: "de gérer les facultés" },
       { slug: "verification", label: "Vérification", permission: "verification.view", icon: "shield", deniedAction: "de vérifier les biens" },
       { slug: "availability", label: "Disponibilités", permission: "availability.view", icon: "calendar", deniedAction: "de modifier les disponibilités" },

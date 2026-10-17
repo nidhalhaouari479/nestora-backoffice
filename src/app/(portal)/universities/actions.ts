@@ -42,9 +42,7 @@ export async function saveFacultyAction(_state: ActionState, formData: FormData)
     name,
     short_name: shortName,
     city: text(formData, "city") || "Tunis",
-    areas: text(formData, "areas").split(",").map((area) => area.trim()).filter(Boolean),
     image_url: imageUrl,
-    image_position: text(formData, "image_position") || "center",
     sort_order: Number(text(formData, "sort_order")) || 0,
     is_active: formData.get("is_active") === "on",
   };

@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requirePermission } from "@/lib/auth/session";
-import { getListing, listActiveLandlords, listFaculties, listingStatus } from "@/lib/catalog";
+import { getListing, listActiveLandlords, listFaculties, listFeatures, listingStatus } from "@/lib/catalog";
 import { ListingForm } from "../ListingForm";
 
 export const metadata: Metadata = { title: "Modifier la maison" };
 
 export default async function EditListingPage({ params }: PageProps<"/properties/[id]">) {
   await requirePermission("properties.manage", "properties");
-  const [listing, landlords, faculties] = await Promise.all([getListing((await params).id), listActiveLandlords(), listFaculties()]);
+  const [listing, landlords, faculties, features] = await Promise.all([getListing((await params).id), listActiveLandlords(), listFaculties(), listFeatures()]);
   if (!listing) notFound();
   const status = listingStatus(listing.status);
   const storefront = process.env.STOREFRONT_URL;
@@ -24,7 +24,7 @@ export default async function EditListingPage({ params }: PageProps<"/properties
           )}
         </div>
       </div>
-      <ListingForm listing={listing} landlords={landlords} faculties={faculties} />
+      <ListingForm listing={listing} landlords={landlords} faculties={faculties} features={features} />
     </div>
   );
 }

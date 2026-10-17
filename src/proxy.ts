@@ -6,7 +6,7 @@ const PUBLIC_PATHS = ["/login", "/session-expired", "/api/auth/"];
 const REMEMBER_COOKIE = "nestora_remember";
 
 // Refreshes the Supabase session cookies and sends anonymous visitors to the login page.
-// Authorization (2FA, idle timeout, role) is enforced again by requireStaff() on each page.
+// Authorization (2FA, revoked session, role) is enforced again by requireStaff() on each page.
 export async function proxy(request: NextRequest) {
   if (!publicEnv.supabaseUrl || !publicEnv.supabaseAnonKey) return NextResponse.next();
   let response = NextResponse.next({ request });

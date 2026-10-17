@@ -5,14 +5,13 @@ import { redirect } from "next/navigation";
 import { requirePermission } from "@/lib/auth/session";
 import { audit } from "@/lib/auth/audit";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { LISTING_STATUSES, LISTING_TYPES, slugify } from "@/lib/catalog";
+import { LISTING_GENDERS, LISTING_STATUSES, LISTING_TYPES, featureKind, slugify } from "@/lib/catalog";
 import { formValues, type ActionState } from "@/lib/forms";
 import { uploadPhoto, validatePhoto } from "@/lib/storage";
 
 const MAX_PHOTOS = 8;
 const BOOLEAN_FIELDS = [
   "service_included", "verified_onsite", "address_verified", "photos_verified", "landlord_verified",
-  "is_furnished", "in_residence", "has_wifi", "has_ac", "has_heating", "has_desk",
 ] as const;
 
 function text(formData: FormData, key: string) {
@@ -35,6 +34,8 @@ export async function saveListingAction(_state: ActionState, formData: FormData)
   const landlordId = text(formData, "landlord_id");
   const faculties = formData.getAll("faculties").map(String).filter(Boolean);
   const price = integer(formData, "price_tnd");
+  const salePrice = integer(formData, "sale_price_tnd");
+  const gender = text(formData, "gender");
   const capacity = integer(formData, "capacity") ?? 1;
   const places = integer(formData, "available_places") ?? 1;
   const walk = integer(formData, "walk_minutes") ?? 10;
@@ -43,6 +44,16 @@ export async function saveListingAction(_state: ActionState, formData: FormData)
   const availableFrom = text(formData, "available_from");
   const keptPhotos = formData.getAll("keep_photos").map(String).filter(Boolean);
   const newPhotos = formData.getAll("photos").filter((file): file is File => file instanceof File && file.size > 0);
+  const supabase = await createSupabaseServerClient();
+
+  // Ticked features with their value, checked against the list each one belongs to.
+  const featureIds = [...new Set(formData.getAll("features").map(String).filter(Boolean))];
+  const { data: featureRows } = featureIds.length
+    ? await supabase.from("listing_features").select("id, kind, name").in("id", featureIds)
+    : { data: [] };
+  const features = ((featureRows ?? []) as { id: string; kind: string; name: string }[]).map((feature) => ({
+    ...feature, value: text(formData, `feature_value_${feature.id}`), input: featureKind(feature.kind)?.input,
+  }));
 
   const fieldErrors: Record<string, string> = {};
   if (title.length < 3) fieldErrors.title = "Titre obligatoire (3 caractères minimum).";
@@ -52,6 +63,12 @@ export async function saveListingAction(_state: ActionState, formData: FormData)
   if (faculties.length === 0) fieldErrors.faculties = "Choisis au moins une faculté.";
   if (!text(formData, "neighborhood")) fieldErrors.neighborhood = "Quartier obligatoire.";
   if (!price || price <= 0) fieldErrors.price_tnd = "Prix mensuel invalide.";
+  if (salePrice !== null && (!Number.isInteger(salePrice) || salePrice <= 0 || (price !== null && salePrice >= price))) fieldErrors.sale_price_tnd = "Doit être inférieur au prix.";
+  if (!LISTING_GENDERS.some((item) => item.value === gender)) fieldErrors.gender = "Coche filles, garçons ou tous.";
+  features.forEach((feature) => {
+    if (feature.input === "minutes" && !/^\d{1,3}$/.test(feature.value)) fieldErrors[`feature_${feature.id}`] = "Nombre de minutes (0 à 999).";
+    if (feature.input === "required" && !feature.value) fieldErrors[`feature_${feature.id}`] = "Valeur obligatoire.";
+  });
   if (!Number.isInteger(capacity) || capacity < 1) fieldErrors.capacity = "Capacité minimum : 1.";
   if (!Number.isInteger(places) || places < 0 || places > capacity) fieldErrors.available_places = "Entre 0 et la capacité.";
   if (!Number.isInteger(walk) || walk < 0) fieldErrors.walk_minutes = "Nombre de minutes invalide.";
@@ -83,6 +100,8 @@ export async function saveListingAction(_state: ActionState, formData: FormData)
     city: text(formData, "city"),
     maps_url: text(formData, "maps_url"),
     price_tnd: price,
+    sale_price_tnd: salePrice ?? "",
+    gender,
     walk_minutes: walk,
     capacity,
     available_places: places,
@@ -91,19 +110,14 @@ export async function saveListingAction(_state: ActionState, formData: FormData)
     available_from: availableFrom,
     status,
     confidence_score: score === null ? "" : score,
-    deposit_label: text(formData, "deposit_label"),
-    charges_label: text(formData, "charges_label"),
-    visits_label: text(formData, "visits_label"),
-    collections: formData.getAll("collections").map(String),
   };
   BOOLEAN_FIELDS.forEach((field) => { data[field] = formData.get(field) === "on"; });
 
   const photos = [...keptPhotos, ...uploaded].map((url) => ({ url, alt: title }));
-  const nearby = Object.fromEntries(["university", "transport", "cafe", "supermarket"].map((kind) => [kind, text(formData, `nearby_${kind}`)]));
+  const featureValues = features.map((feature) => ({ id: feature.id, value: feature.input === "none" ? "" : feature.value }));
 
-  const supabase = await createSupabaseServerClient();
   const { data: savedId, error } = await supabase.rpc("admin_save_listing", {
-    p_id: id, p_data: data, p_university_ids: faculties, p_photos: photos, p_nearby: nearby,
+    p_id: id, p_data: data, p_university_ids: faculties, p_photos: photos, p_features: featureValues,
   } as never);
   if (error) {
     // Messages raised by admin_save_listing are already in French.

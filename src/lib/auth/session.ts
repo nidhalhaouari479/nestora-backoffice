@@ -69,14 +69,8 @@ export const getSessionState = cache(async (): Promise<SessionState> => {
   if (!session) return { status: "needs_2fa", member, sessionId: auth.sessionId };
   if (session.revoked_at) return { status: "expired", member };
 
-  const idleMs = Date.now() - new Date(session.last_seen_at).getTime();
-  if (idleMs > publicEnv.idleMinutes * 60_000) {
-    await admin.from("staff_sessions").update({ revoked_at: new Date().toISOString(), revoked_reason: "idle_timeout" } as never).eq("auth_session_id", auth.sessionId);
-    await audit("session_expired", member.userId, null, { idle_minutes: Math.round(idleMs / 60_000) });
-    return { status: "expired", member };
-  }
-
-  if (idleMs > LAST_SEEN_THROTTLE_MS) {
+  // No idle timeout: the session stays open until logout. last_seen_at is kept for information only.
+  if (Date.now() - new Date(session.last_seen_at).getTime() > LAST_SEEN_THROTTLE_MS) {
     await admin.from("staff_sessions").update({ last_seen_at: new Date().toISOString() } as never).eq("auth_session_id", auth.sessionId);
   }
   return { status: "active", context: { ...member, sessionId: auth.sessionId } };

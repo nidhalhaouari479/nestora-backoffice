@@ -1,9 +1,9 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-// Reads for clients, faculties and houses. Reads use the staff session, so RLS decides what each role can see.
+// Reads for clients, faculties, features and houses. Reads use the staff session, so RLS decides what each role can see.
 
 export * from "./catalog-shared";
-import type { Faculty, Landlord, ListingDetail, ListingRow } from "./catalog-shared";
+import type { Faculty, Feature, Landlord, ListingDetail, ListingRow } from "./catalog-shared";
 
 function escapeLike(value: string) {
   return value.replace(/[%_,()]/g, " ").trim();
@@ -69,7 +69,22 @@ export async function listListings({ q = "", status = "all", landlord = "", facu
 export async function getListing(id: string) {
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase.from("listings")
-    .select("*, listing_universities(university_id), listing_photos(url, alt, position, sort_order), listing_nearby(kind, minutes)")
+    .select("*, listing_universities(university_id), listing_photos(url, alt, position, sort_order), listing_feature_values(feature_id, value)")
     .eq("id", id).maybeSingle();
   return data as ListingDetail | null;
+}
+
+export async function listFeatures(kind?: string) {
+  const supabase = await createSupabaseServerClient();
+  let query = supabase.from("listing_features").select("*, listing_feature_values(count)").order("sort_order").order("name");
+  if (kind) query = query.eq("kind", kind);
+  const { data, error } = await query;
+  if (error) throw new Error(`listing_features: ${error.message}`);
+  return (data ?? []) as (Feature & { listing_feature_values: { count: number }[] })[];
+}
+
+export async function getFeature(id: string) {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase.from("listing_features").select("*").eq("id", id).maybeSingle();
+  return data as Feature | null;
 }

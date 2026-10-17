@@ -5,6 +5,9 @@ const MESSAGES: Record<string, string> = {
   updated: "Modifications enregistrées.",
   activated: "Réactivé.",
   deactivated: "Désactivé.",
+  deleted: "Supprimé.",
+  confirmed: "Visite confirmée.",
+  cancelled: "Demande annulée.",
 };
 
 // Confirmation shown after a redirect (?saved=created|updated|…).

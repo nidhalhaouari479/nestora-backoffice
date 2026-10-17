@@ -17,13 +17,15 @@ npm run dev                  # http://localhost:3001
 | --- | --- | --- |
 | AP1A_01 Secure Team Login | `/login` | email + mot de passe Supabase ; seuls les `staff_members` actifs passent |
 | AP1A_02 Two-Factor Authentication | `/verify` | code à 6 chiffres envoyé par email (SMTP), haché HMAC-SHA256 avec `ADMIN_2FA_SECRET`, 5 essais max |
-| AP1A_03 Session Expired | `/session-expired` | déconnexion après `NEXT_PUBLIC_ADMIN_IDLE_MINUTES` d’inactivité (navigateur + serveur + RLS) |
+| AP1A_03 Session Expired | `/session-expired` | affiché quand une session staff est révoquée (pas d’expiration pour inactivité) |
 | AP1A_18 Access Denied | `/access-denied` | chaque module exige une permission du rôle ; les refus sont écrits dans `audit_log` |
 | AP1A_04 Command Center | `/command-center` | indicateurs via `ops_command_center_stats()` |
 | AP1A_05 My Workspace | `/workspace` | tâches et planning assignés via `ops_workspace_stats()` |
+| Visites | `/visits` | l’étudiant propose 1 à 7 jours (un créneau chacun) ; l’équipe retient la date finale via `staff_confirm_visit()` |
+| Étudiants | `/students`, `/students/[id]` | étudiants inscrits sur le site via `staff_list_students()` / `staff_get_student()` (permission `students.view`) |
 
 Les données sont lues avec la session de l’utilisateur : les policies RLS (`is_verified_staff()`)
-refusent tout accès tant que la 2FA n’est pas validée ou si la session est inactive depuis plus de 20 minutes.
+refusent tout accès tant que la 2FA n’est pas validée ou si la session a été révoquée.
 La clé `SUPABASE_SERVICE_ROLE_KEY` sert uniquement côté serveur (codes 2FA, sessions, journal d’audit).
 
 En développement, si `SMTP_HOST` est vide, le code 2FA est affiché dans la console du serveur.

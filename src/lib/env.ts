@@ -6,7 +6,6 @@ function readNumber(value: string | undefined, fallback: number) {
 export const publicEnv = {
   supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
   supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
-  idleMinutes: readNumber(process.env.NEXT_PUBLIC_ADMIN_IDLE_MINUTES, 20),
 };
 
 // Server-only values. Never import this object from a Client Component.
