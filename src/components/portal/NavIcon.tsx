@@ -32,7 +32,7 @@ const ICONS = {
   contact: IdCard,
 } satisfies Record<NavIconName, unknown>;
 
-export function NavIcon({ name, size = 19 }: { name: NavIconName; size?: number }) {
+export function NavIcon({ name, size = 18, strokeWidth = 1.8 }: { name: NavIconName; size?: number; strokeWidth?: number }) {
   const Icon = ICONS[name];
-  return <Icon size={size} strokeWidth={1.7} aria-hidden="true" />;
+  return <Icon size={size} strokeWidth={strokeWidth} aria-hidden="true" />;
 }

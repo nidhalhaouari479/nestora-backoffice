@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Noto_Serif } from "next/font/google";
+import { FeedbackHost } from "@/components/FeedbackHost";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -14,7 +15,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="fr" className={`${inter.variable} ${serif.variable}`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <FeedbackHost />
+      </body>
     </html>
   );
 }

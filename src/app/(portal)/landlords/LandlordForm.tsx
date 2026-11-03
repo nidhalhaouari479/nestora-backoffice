@@ -34,7 +34,7 @@ export function LandlordForm({ landlord }: { landlord?: Landlord }) {
         <Field label="Téléphone *" name="phone" error={errors.phone}>
           <input id="phone" name="phone" type="tel" defaultValue={v.text("phone", landlord?.phone)} placeholder="+216 22 111 222" required />
         </Field>
-        <Field label="Email" name="email" error={errors.email}>
+        <Field label="Email" name="email" error={errors.email} hint="Sert aussi d’identifiant pour le portail client.">
           <input id="email" name="email" type="email" defaultValue={v.text("email", landlord?.email)} placeholder="karim@email.com" />
         </Field>
         <Field label="Adresse" name="address" wide>
@@ -43,6 +43,15 @@ export function LandlordForm({ landlord }: { landlord?: Landlord }) {
         <Field label="Notes internes" name="notes" wide>
           <textarea id="notes" name="notes" rows={3} defaultValue={v.text("notes", landlord?.notes)} placeholder="Disponibilités, préférences de contact…" />
         </Field>
+      </div>
+
+      <h3 className="form-section-title">Accès au portail client</h3>
+      <div className="form-grid">
+        <Field label={landlord?.user_id ? "Nouveau mot de passe" : "Mot de passe du portail"} name="portal_password" error={errors.portal_password}
+          hint={landlord?.user_id ? "Accès actif. Laisse vide pour garder le mot de passe actuel." : "Laisse vide si ce client n’a pas besoin du portail. 8 caractères minimum."}>
+          <input id="portal_password" name="portal_password" type="password" autoComplete="new-password" minLength={8} placeholder="••••••••" />
+        </Field>
+        <p className="field-hint inline-link">Le client se connecte sur <b>/client/login</b> avec son e-mail et ce mot de passe, sans code.</p>
       </div>
 
       <div className="form-footer">

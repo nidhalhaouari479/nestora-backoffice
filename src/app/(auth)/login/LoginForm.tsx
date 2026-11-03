@@ -36,7 +36,7 @@ export function LoginForm({ initialError }: { initialError?: string }) {
 
       <p className="notice notice-teal">
         <ShieldCheck size={16} aria-hidden="true" />
-        <span>Authentification renforcée, journalisation des connexions et permissions par rôle. Les paiements, contrats et documents sensibles nécessitent une autorisation dédiée.</span>
+        <span>Connexion par mot de passe, journalisation des connexions et permissions par rôle. Les paiements, contrats et documents sensibles nécessitent une autorisation dédiée.</span>
       </p>
     </form>
   );

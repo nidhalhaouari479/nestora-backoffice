@@ -1,16 +1,29 @@
 "use client";
 
+import { useRef } from "react";
 import { Trash2 } from "lucide-react";
+import { confirmDialog } from "@/components/FeedbackHost";
 import { deleteFeatureAction } from "./actions";
 
 export function DeleteFeatureButton({ id, kind, name, houses }: { id: string; kind: string; name: string; houses: number }) {
+  const confirmed = useRef(false);
   return (
     <form
       action={deleteFeatureAction}
       className="inline-form"
-      onSubmit={(event) => {
-        const warning = houses > 0 ? `\n\nElle sera retirée de ${houses} maison${houses > 1 ? "s" : ""}.` : "";
-        if (!window.confirm(`Supprimer « ${name} » ?${warning}`)) event.preventDefault();
+      onSubmit={async (event) => {
+        if (confirmed.current) { confirmed.current = false; return; }
+        event.preventDefault();
+        const form = event.currentTarget;
+        const ok = await confirmDialog({
+          title: `Supprimer « ${name} » ?`,
+          message: houses > 0 ? `Elle sera retirée de ${houses} maison${houses > 1 ? "s" : ""}.` : "Aucune maison n’utilise cette caractéristique.",
+          confirmLabel: "Supprimer la caractéristique",
+          tone: "danger",
+        });
+        if (!ok) return;
+        confirmed.current = true;
+        form.requestSubmit();
       }}
     >
       <input type="hidden" name="id" value={id} />

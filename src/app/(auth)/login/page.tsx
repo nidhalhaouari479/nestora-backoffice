@@ -9,7 +9,8 @@ export const metadata: Metadata = { title: "Connexion" };
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const state = await getSessionState();
   if (state.status === "active") redirect(`/${homeFor(state.context.permissions)}`);
-  if (state.status === "needs_2fa") redirect("/verify");
+  // Signed in but without a staff session (e.g. opened before 2FA was removed): sign in again.
+  if (state.status === "needs_2fa") redirect("/api/auth/logout?reason=relogin");
 
   const { error } = await searchParams;
   return (

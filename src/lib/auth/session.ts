@@ -2,7 +2,7 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { publicEnv } from "@/lib/env";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient, type SessionScope } from "@/lib/supabase/server";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { ROLE_LABELS, findSection, type StaffRole } from "./permissions";
 import { audit } from "./audit";
@@ -24,11 +24,11 @@ type StaffSessionRow = { auth_session_id: string; last_seen_at: string; revoked_
 const LAST_SEEN_THROTTLE_MS = 60_000;
 
 // Signed-in Supabase user (JWT verified) with the current Auth session id.
-export const getAuthUser = cache(async () => {
+export const getAuthUser = cache(async (scope: SessionScope = "staff") => {
   // Always per-request: auth pages must never be prerendered.
   await connection();
   if (!publicEnv.supabaseUrl || !publicEnv.supabaseAnonKey) return null;
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient(scope);
   const { data, error } = await supabase.auth.getClaims();
   const claims = data?.claims;
   if (error || !claims?.sub || typeof claims.session_id !== "string") return null;
@@ -81,7 +81,7 @@ export async function requireStaff(sectionSlug?: string): Promise<StaffContext> 
   const state = await getSessionState();
   if (state.status === "anonymous") redirect("/login");
   if (state.status === "not_staff") redirect("/api/auth/logout?reason=not_staff");
-  if (state.status === "needs_2fa") redirect("/verify");
+  if (state.status === "needs_2fa") redirect("/api/auth/logout?reason=relogin");
   if (state.status === "expired") redirect("/api/auth/expire");
 
   const { context } = state;

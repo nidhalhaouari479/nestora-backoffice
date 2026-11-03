@@ -74,6 +74,7 @@ export type Landlord = {
   address: string | null;
   notes: string;
   is_active: boolean;
+  user_id: string | null; // client portal account (email + password set by the team)
   created_at: string;
 };
 

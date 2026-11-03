@@ -5,7 +5,8 @@ export type AuditAction =
   | "login_failed" | "login_password_ok" | "login_blocked_not_staff" | "two_factor_sent" | "two_factor_failed"
   | "two_factor_locked" | "login_success" | "session_expired" | "logout" | "access_denied"
   | "landlord_created" | "landlord_updated" | "faculty_created" | "faculty_updated" | "listing_created" | "listing_updated"
-  | "feature_created" | "feature_updated" | "feature_deleted" | "visit_confirmed" | "visit_cancelled";
+  | "feature_created" | "feature_updated" | "feature_deleted" | "visit_confirmed" | "visit_cancelled"
+  | "calendar_updated" | "client_login_failed" | "client_login_success" | "client_calendar_updated";
 
 // Audit failures must never block the user flow, so errors are only logged.
 export async function audit(action: AuditAction, actorId: string | null, resource: string | null = null, metadata: Record<string, unknown> = {}) {

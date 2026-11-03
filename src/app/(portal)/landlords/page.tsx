@@ -60,7 +60,7 @@ export default async function LandlordsPage({ searchParams }: PageProps<"/landlo
                     <td>{landlord.email ?? "—"}</td>
                     <td><Link href={`/properties?landlord=${landlord.id}`} className="table-link">{landlord.listings[0]?.count ?? 0}</Link></td>
                     <td><span className={`pill ${landlord.is_active ? "pill-success" : "pill-neutral"}`}>{landlord.is_active ? "Actif" : "Inactif"}</span></td>
-                    <td className="table-actions">{canManage && <Link href={`/landlords/${landlord.id}`} className="table-link">Modifier</Link>}</td>
+                    <td className="table-actions"><span className="action-group"><Link href={`/landlords/${landlord.id}/calendar`} className="table-link">Calendrier</Link>{canManage && <Link href={`/landlords/${landlord.id}`} className="table-link">Modifier</Link>}</span></td>
                   </tr>
                 ))}
               </tbody>

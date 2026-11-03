@@ -77,7 +77,7 @@ export function formatTime(iso: string) {
 }
 
 export function formatToday() {
-  return new Intl.DateTimeFormat("fr-FR", { timeZone: TIME_ZONE, day: "numeric", month: "long", year: "numeric" }).format(new Date());
+  return new Intl.DateTimeFormat("fr-FR", { timeZone: TIME_ZONE, weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(new Date());
 }
 
 // Data is read with the staff member's own session, so RLS (is_verified_staff) applies.

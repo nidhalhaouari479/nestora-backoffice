@@ -5,7 +5,10 @@ import { requireStaff } from "@/lib/auth/session";
 import { VISIT_STATUSES, formatDate } from "@/lib/students";
 import { VISIT_FILTERS, formatSlot, formatVisitDay, isPendingVisit, listVisits } from "@/lib/visits";
 import { Flash } from "@/components/admin/Flash";
-import { cancelVisitAction, confirmVisitAction } from "./actions";
+import { VisitChooser } from "@/components/visits/VisitChooser";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { slotFreeness, visitWindow } from "@/lib/client-portal";
+import { cancelVisitAction, chooseVisitSlotAction } from "./actions";
 
 export const metadata: Metadata = { title: "Visites" };
 
@@ -16,6 +19,18 @@ export default async function VisitsPage({ searchParams }: PageProps<"/visits">)
   const filter = VISIT_FILTERS.find((item) => item.value === requested)?.value ?? "pending";
   const error = typeof params.error === "string" ? params.error : "";
   const visits = await listVisits(filter);
+  const range = visitWindow();
+
+  // Is each proposal still free in the Nestora calendar AND the client's calendar?
+  const pendingVisits = visits.filter((visit) => isPendingVisit(visit.status));
+  const { data: owners } = pendingVisits.length
+    ? await getSupabaseAdmin().from("listings").select("id, landlord_id").in("id", [...new Set(pendingVisits.map((visit) => visit.listing_id))])
+    : { data: [] };
+  const landlordOf = new Map(((owners ?? []) as { id: string; landlord_id: string | null }[]).map((row) => [row.id, row.landlord_id]));
+  const freeness = new Map<string, Map<string, boolean>>();
+  await Promise.all(pendingVisits.map(async (visit) => {
+    freeness.set(visit.id, await slotFreeness(landlordOf.get(visit.listing_id) ?? null, visit.proposed_slots.map((slot) => ({ date: slot.date, hour: Number(slot.start.slice(0, 2)) }))));
+  }));
 
   return (
     <div className="page">
@@ -23,7 +38,7 @@ export default async function VisitsPage({ searchParams }: PageProps<"/visits">)
         <div>
           <p className="eyebrow">Étudiants</p>
           <h2>Visites</h2>
-          <p>L’étudiant propose ses jours disponibles sur 7 jours. Choisis la date finale parmi ses propositions.</p>
+          <p>L’étudiant propose jusqu’à 3 créneaux. Accepte l’un d’eux ou choisis un autre créneau libre : la visite passe en vert dans les calendriers de Nestora et du client.</p>
         </div>
       </div>
 
@@ -49,7 +64,6 @@ export default async function VisitsPage({ searchParams }: PageProps<"/visits">)
                 {visits.map((visit) => {
                   const pending = isPendingVisit(visit.status);
                   const status = VISIT_STATUSES[visit.status];
-                  const formId = `confirm-${visit.id}`;
                   return (
                     <tr key={visit.id}>
                       <td className="mono">{visit.reference}</td>
@@ -62,19 +76,14 @@ export default async function VisitsPage({ searchParams }: PageProps<"/visits">)
                       <td><Link href={`/properties/${visit.listing_id}`} className="table-link">{visit.listing_title}</Link><small>{visit.listing_neighborhood}</small></td>
                       <td>
                         {pending ? (
-                          <form id={formId} action={confirmVisitAction} className="proposal-picker">
-                            <input type="hidden" name="id" value={visit.id} />
-                            <input type="hidden" name="filter" value={filter} />
-                            <fieldset>
-                              <legend className="sr-only">Date finale pour {visit.reference}</legend>
-                              {visit.proposed_slots.map((proposal) => (
-                                <label key={proposal.date} className="check-chip">
-                                  <input type="radio" name="date" value={proposal.date} required />
-                                  <span><strong>{formatVisitDay(proposal.date)}</strong> · {formatSlot(proposal.start, proposal.end)}</span>
-                                </label>
-                              ))}
-                            </fieldset>
-                          </form>
+                          <VisitChooser
+                            visitId={visit.id}
+                            compact
+                            minDate={range.today}
+                            maxDate={range.max}
+                            action={chooseVisitSlotAction}
+                            proposals={visit.proposed_slots.map((slot) => ({ ...slot, free: freeness.get(visit.id)?.get(`${slot.date}|${Number(slot.start.slice(0, 2))}`) ?? false }))}
+                          />
                         ) : visit.confirmed_date ? (
                           <><strong>{formatVisitDay(visit.confirmed_date)}</strong><small>{formatSlot(visit.slot_start, visit.slot_end)}</small></>
                         ) : (
@@ -85,7 +94,6 @@ export default async function VisitsPage({ searchParams }: PageProps<"/visits">)
                       <td className="nowrap">{formatDate(visit.created_at, true)}</td>
                       <td className="table-actions">
                         <div className="action-stack">
-                          {pending && <button type="submit" form={formId} className="button-dark button-small">Confirmer</button>}
                           {(pending || visit.status === "confirmed") && (
                             <form action={cancelVisitAction} className="inline-form">
                               <input type="hidden" name="id" value={visit.id} />

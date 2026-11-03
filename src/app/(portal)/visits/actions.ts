@@ -42,3 +42,21 @@ export async function cancelVisitAction(formData: FormData) {
   revalidatePath("/visits");
   back(formData, "saved=cancelled");
 }
+
+// Chooser (proposal or another one-hour slot). Returns a result instead of redirecting.
+export async function chooseVisitSlotAction(formData: FormData): Promise<{ ok: true; message: string } | { ok: false; error: string }> {
+  const staff = await requirePermission("visits.view", "visits");
+  const id = text(formData, "id");
+  const date = text(formData, "date");
+  const hour = Number(formData.get("hour"));
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isInteger(hour)) return { ok: false, error: "Choisis une date et une heure." };
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("staff_confirm_visit_at", { p_id: id, p_date: date, p_hour: hour } as never);
+  if (error) return { ok: false, error: error.code === "42501" ? "Tu n’as pas le droit de confirmer cette visite." : error.message };
+
+  await audit("visit_confirmed", staff.userId, "visits", { visit_id: id, date, hour });
+  revalidatePath("/visits");
+  revalidatePath("/planning");
+  return { ok: true, message: "Visite confirmée. Elle apparaît en vert dans les calendriers." };
+}

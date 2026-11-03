@@ -9,7 +9,8 @@ export const metadata: Metadata = { title: "Accès non autorisé" };
 export default async function AccessDeniedPage({ searchParams }: PageProps<"/access-denied">) {
   const state = await getSessionState();
   if (state.status === "anonymous") redirect("/login");
-  if (state.status === "needs_2fa") redirect("/verify");
+  // Signed in but without a staff session (e.g. opened before 2FA was removed): sign in again.
+  if (state.status === "needs_2fa") redirect("/api/auth/logout?reason=relogin");
   if (state.status !== "active") redirect("/api/auth/expire");
 
   const { section: slug } = await searchParams;

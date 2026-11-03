@@ -1,7 +1,7 @@
-export function BrandLogo({ size = 42 }: { size?: number }) {
+export function BrandLogo({ size = 42, onLight = false }: { size?: number; onLight?: boolean }) {
   return (
     <svg width={size} height={size} viewBox="0 0 42 42" fill="none" aria-hidden="true">
-      <rect x="0.5" y="0.5" width="41" height="41" rx="11.5" fill="#ffffff08" stroke="#ffffff47" />
+      <rect x="0.5" y="0.5" width="41" height="41" rx="11.5" fill={onLight ? "#163a50" : "#ffffff08"} stroke={onLight ? "#163a50" : "#ffffff47"} />
       <path d="M12 32V19.5C12 14.25 16.03 10 21 10C25.97 10 30 14.25 30 19.5V32" stroke="#66dfc5" strokeWidth="3.4" strokeLinecap="round" />
       <path d="M21 24.5V32" stroke="#ef765e" strokeWidth="3.4" strokeLinecap="round" />
     </svg>
